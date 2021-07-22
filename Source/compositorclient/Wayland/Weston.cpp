@@ -421,7 +421,6 @@ namespace Wayland {
         , _ZOrder(0)
         , _display(&display)
         , _native(nullptr)
-        , _frameCallback(nullptr)
         , _eglSurfaceWindow(EGL_NO_SURFACE)
         , _keyboard(nullptr)
         , _pointer(nullptr)
@@ -470,7 +469,6 @@ namespace Wayland {
         , _ZOrder(0)
         , _display(&display)
         , _native(nullptr)
-        , _frameCallback(nullptr)
         , _shellSurface(nullptr)
         , _eglSurfaceWindow(EGL_NO_SURFACE)
         , _keyboard(nullptr)
@@ -492,7 +490,6 @@ namespace Wayland {
         , _ZOrder(0)
         , _display(&display)
         , _native(nullptr)
-        , _frameCallback(nullptr)
         , _shellSurface(nullptr)
         , _eglSurfaceWindow(EGL_NO_SURFACE)
         , _keyboard(nullptr)
@@ -503,7 +500,7 @@ namespace Wayland {
 
     Display::SurfaceImplementation::~SurfaceImplementation()
     {
-	 _display->Destructed(reinterpret_cast<uint32_t>(_xdg_surface));
+         _display->Destructed(reinterpret_cast<uint32_t>(_xdg_surface));
          if (_xdg_toplevel != nullptr) {
              xdg_toplevel_destroy(_xdg_toplevel);
              _xdg_toplevel = nullptr;
@@ -514,23 +511,6 @@ namespace Wayland {
              _xdg_surface = nullptr;
          }
 
-    }
-
-    void Display::SurfaceImplementation::Callback(wl_callback_listener* listener, void* data)
-    {
-
-        assert((listener == nullptr) ^ (_frameCallback == nullptr));
-
-        if (listener != nullptr) {
-
-            _frameCallback = wl_surface_frame(_surface);
-            wl_callback_add_listener(_frameCallback, listener, data);
-
-            eglSwapBuffers(_display->_eglDisplay, _eglSurfaceWindow);
-        } else {
-            wl_callback_destroy(_frameCallback);
-            _frameCallback = nullptr;
-        }
     }
 
     void Display::SurfaceImplementation::Resize(const int, const int, const int, const int)
@@ -604,10 +584,6 @@ namespace Wayland {
     void Display::SurfaceImplementation::Unlink()
     {
         if (_display != nullptr) {
-
-            if (_frameCallback != nullptr) {
-                wl_callback_destroy(_frameCallback);
-            }
 
             if (_eglSurfaceWindow != EGL_NO_SURFACE) {
 
@@ -1003,7 +979,7 @@ namespace Wayland {
             xdg_toplevel_set_title(surface->_xdg_toplevel, name.c_str());
 
             _waylandSurfaces.insert(std::pair<struct wl_surface*, SurfaceImplementation*>(surface->_surface, surface));
-	    _surfaces.insert(std::pair<uint32_t, SurfaceImplementation*>(reinterpret_cast<uint32_t>(surface->_xdg_surface), surface));
+            _surfaces.insert(std::pair<uint32_t, SurfaceImplementation*>(reinterpret_cast<uint32_t>(surface->_xdg_surface), surface));
             result = surface;
         }
 
@@ -1066,7 +1042,7 @@ namespace Wayland {
             if (_clientHandler != nullptr) {
                 _clientHandler->Attached(id);
             }
-	}
+        }
         _adminLock.Unlock();
     }
 

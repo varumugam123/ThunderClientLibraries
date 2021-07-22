@@ -21,3 +21,6 @@ uninstall.cmake
 *.user
 /artifacts/Release
 *.pyc
+*/*/*/Makefile
+*/*/*/cmake_install.cmake
+*/*/*/*ConfigVersion.cmake

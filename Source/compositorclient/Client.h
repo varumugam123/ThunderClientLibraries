@@ -136,7 +136,6 @@ namespace Compositor {
             virtual void Resize(const int, const int, const int, const int) { }
             virtual void Dimensions(const uint32_t, const int32_t, const int32_t,
                                     const int32_t, const int32_t, const uint32_t, const uint32_t) { }
-            virtual void Callback(wl_callback_listener*, void*) { }
             virtual void Visibility(const bool) { }
             virtual void Opacity(const uint32_t) { }
             virtual void ZOrder(const uint32_t) { }

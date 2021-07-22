@@ -210,7 +210,6 @@ namespace Wayland {
                 const int32_t x, const int32_t y, const int32_t width, const int32_t height,
                 const uint32_t opacity,
                 const uint32_t zorder) override;
-            void Callback(wl_callback_listener* listener, void* data) override;
             void Visibility(const bool visible) override;
             void Opacity(const uint32_t opacity) override;
             void ZOrder(const uint32_t order) override;
@@ -247,7 +246,6 @@ namespace Wayland {
             uint32_t _ZOrder;
             Display* _display;
             struct wl_egl_window* _native;
-            struct wl_callback* _frameCallback;
             struct wl_shell_surface* _shellSurface;
             EGLSurface _eglSurfaceWindow;
             IKeyboard* _keyboard;
@@ -466,11 +464,6 @@ namespace Wayland {
                     _implementation->Release();
                     _implementation = nullptr;
                 }
-            }
-            inline void Callback(wl_callback_listener* listener, void* data = nullptr)
-            {
-                assert(IsValid() == true);
-                _implementation->Callback(listener, data);
             }
             inline void Resize(const int x, const int y, const int width, const int height)
             {
