@@ -515,6 +515,10 @@ namespace Wayland {
     {
     }
 
+    Display::SurfaceImplementation::~SurfaceImplementation()
+    {
+    }
+
     void Display::SurfaceImplementation::Resize(const int dx, const int dy, const int width, const int height)
     {
         Trace("SimpleShell Geometry  %s to h%dpx x w%dpx at position x=%d y=%d\n", _name.c_str(), width, height, dy, dy);
