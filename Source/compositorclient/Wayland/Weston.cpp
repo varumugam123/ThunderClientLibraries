@@ -324,7 +324,6 @@ handle_surface_configure(void *data, struct xdg_surface *id,
 {
     Wayland::Display *display = (Wayland::Display *)data;
 
-    display->Constructed(reinterpret_cast<uint32_t>(id));
     xdg_surface_ack_configure(id, serial);
 }
 
@@ -421,6 +420,7 @@ namespace Wayland {
         , _ZOrder(0)
         , _display(&display)
         , _native(nullptr)
+        , _shellSurface(nullptr)
         , _eglSurfaceWindow(EGL_NO_SURFACE)
         , _keyboard(nullptr)
         , _pointer(nullptr)
@@ -434,17 +434,7 @@ namespace Wayland {
 
         if (_surface != nullptr) {
 
-            struct wl_region* region;
-            region = wl_compositor_create_region(display._compositor);
-
-            wl_region_add(region, 0, 0, width, height);
-
-            // Found in WPEwayland implementation:
-            wl_surface_set_opaque_region(_surface, region);
-
-            wl_region_destroy(region);
-
-            Trace("Creating a surface of size: %d x %d _surface=%p\n", width, height, _surface);
+            Trace("### Creating a surface of size: %d x %d _surface=%p\n", width, height, _surface);
 
             _native = wl_egl_window_create(_surface, width, height);
 
@@ -500,7 +490,6 @@ namespace Wayland {
 
     Display::SurfaceImplementation::~SurfaceImplementation()
     {
-         _display->Destructed(reinterpret_cast<uint32_t>(_xdg_surface));
          if (_xdg_toplevel != nullptr) {
              xdg_toplevel_destroy(_xdg_toplevel);
              _xdg_toplevel = nullptr;
@@ -508,6 +497,7 @@ namespace Wayland {
 
          if (_xdg_surface != nullptr) {
              xdg_surface_destroy(_xdg_surface);
+             _display->Destructed(reinterpret_cast<uint32_t>(_xdg_surface));
              _xdg_surface = nullptr;
          }
 
@@ -961,7 +951,7 @@ namespace Wayland {
     {
         IDisplay::ISurface* result = nullptr;
 
-        Trace("Display::Create\n");
+        Trace("Display::Create: name = %s\n", name.c_str());
         _adminLock.Lock();
 
         SurfaceImplementation* surface = new SurfaceImplementation(*this, name, width, height);
@@ -974,12 +964,11 @@ namespace Wayland {
             surface->_xdg_toplevel = xdg_surface_get_toplevel(surface->_xdg_surface);
             assert(surface->_xdg_toplevel != NULL);
             xdg_toplevel_add_listener(surface->_xdg_toplevel, &xdg_toplevel_listener, this);
-
-            wl_surface_commit(surface->_surface);
             xdg_toplevel_set_title(surface->_xdg_toplevel, name.c_str());
 
             _waylandSurfaces.insert(std::pair<struct wl_surface*, SurfaceImplementation*>(surface->_surface, surface));
             _surfaces.insert(std::pair<uint32_t, SurfaceImplementation*>(reinterpret_cast<uint32_t>(surface->_xdg_surface), surface));
+            wl_surface_commit(surface->_surface);
             result = surface;
         }
 
@@ -1082,7 +1071,7 @@ namespace Wayland {
                 // See if it is in the surfaces map, we need to take it out here as well..
                 WaylandSurfaceMap::iterator entry(_waylandSurfaces.find(index->second->_surface));
 
-                // assert(entry != _waylandSurfaces.end());
+                assert(entry != _waylandSurfaces.end());
 
                 if (entry != _waylandSurfaces.end()) {
                     entry->second->Release();
