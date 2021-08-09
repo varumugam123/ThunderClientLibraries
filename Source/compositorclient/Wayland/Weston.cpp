@@ -319,11 +319,9 @@ static const struct wl_registry_listener globalRegistryListener = {
 };
 
 static void
-handle_surface_configure(void *data, struct xdg_surface *id,
+handle_surface_configure(void*, struct xdg_surface* id,
              uint32_t serial)
 {
-    Wayland::Display *display = (Wayland::Display *)data;
-
     xdg_surface_ack_configure(id, serial);
 }
 
@@ -334,11 +332,8 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 
 static void
 handle_toplevel_configure(void*, struct xdg_toplevel*,
-              int32_t, int32_t, struct wl_array*)
+                          int32_t, int32_t, struct wl_array*)
 {
-    // TODO
-    // Wayland::Display *display = (Wayland::Display *)data;
-    // display->Dimensions(id, 1, 0, 0, width, height, 1, 0);
 }
 
 static void
@@ -531,35 +526,9 @@ namespace Wayland {
     }
 
     void Display::SurfaceImplementation::Dimensions(
-        const uint32_t visible,
-        const int32_t x, const int32_t y, const int32_t width, const int32_t height,
-        const uint32_t opacity,
-        const uint32_t zorder)
+        const uint32_t, const int32_t, const int32_t, const int32_t,
+        const int32_t, const uint32_t, const uint32_t)
     {
-        Trace("Updated surfaceId=%d width=%d  height=%d x=%d, y=%d visible=%d opacity=%d zorder=%d\n", _id, width, height, x, y, visible, opacity, zorder);
-
-        _visible = visible;
-        _opacity = opacity;
-        _ZOrder = zorder;
-        // This is the response form the status, but if we created the window, we need to check
-        // and set according to the request.
-        if (_native != nullptr) {
-            if ((_width != width) || (_height != height) || (_x != x) || (_y != y)) {
-                Trace("Resizing surface %d from [%d x %d] to [%d x %d]\n", _id, _width, _height, width, height);
-                wl_egl_window_resize(_native, _width, _height, x, y);
-            }
-        } else {
-            // Update this surface
-            Trace("Update surface %d from [%d x %d] to [%d x %d]\n", _id, _width, _height, width, height);
-            _x = x;
-            _y = y;
-            _width = width;
-            _height = height;
-        }
-
-        wl_display_flush(_display->_display);
-
-        Trace("Current surfaceId=%d width=%d  height=%d x=%d, y=%d, visible=%d opacity=%d zorder=%d\n", _id, _width, _height, _x, _y, _visible, _opacity, _ZOrder);
     }
 
     void Display::SurfaceImplementation::Redraw()
@@ -978,26 +947,10 @@ namespace Wayland {
     }
 
     void Display::Dimensions(
-        const uint32_t id,
-        const uint32_t visible,
-        const int32_t x, const int32_t y, const int32_t width, const int32_t height,
-        const uint32_t opacity,
-        const uint32_t zorder)
+        const uint32_t, const uint32_t,
+        const int32_t, const int32_t, const int32_t, const int32_t,
+        const uint32_t, const uint32_t)
     {
-        Trace("Updated Dimensions surfaceId=%d width=%d  height=%d x=%d, y=%d visible=%d opacity=%d zorder=%d\n", id, width, height, x, y, visible, opacity, zorder);
-        _adminLock.Lock();
-
-        SurfaceMap::iterator index = _surfaces.find(id);
-
-        if (index != _surfaces.end()) {
-            Trace("Updated Dimensions surfaceId=%d name=%s width=%d  height=%d x=%d, y=%d visible=%d opacity=%d zorder=%d\n", id, index->second->Name().c_str(), width, height, x, y, visible, opacity, zorder);
-            index->second->Dimensions(visible, x, y, width, height, opacity, zorder);
-        } else {
-            // TODO: Seems this is a surface, we did not create. maybe we need to collect it in future.
-            //Trace("Unidentified surface: id=%d.\n");
-        }
-
-        _adminLock.Unlock();
     }
 
     void Display::Constructed(const uint32_t, wl_surface*)
