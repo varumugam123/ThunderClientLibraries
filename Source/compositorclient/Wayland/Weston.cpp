@@ -500,9 +500,9 @@ namespace Wayland {
         }
     }
 
-    void Display::SurfaceImplementation::Resize(const int, const int, const int, const int)
+    void Display::SurfaceImplementation::Resize(const int x, const int y, const int w, const int h)
     {
-        Trace("WARNING: Display::SurfaceImplementation::Resize is not implemented\n");
+        xdg_surface_set_window_geometry(_xdg_surface, x, y, w, h);
     }
 
     void Display::SurfaceImplementation::Visibility(const bool)
@@ -888,6 +888,7 @@ namespace Wayland {
         }
 
         if (_display != nullptr) {
+            wl_display_flush(_display);
             wl_display_disconnect(_display);
             _display = nullptr;
         }
